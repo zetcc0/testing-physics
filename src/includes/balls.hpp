@@ -3,20 +3,25 @@
 #include <iostream>
 #include <cmath>
 
+struct sBall
+{
+	sf::CircleShape shape;
+	sf::Vector2f vel, accel;
+	float mass = 70;
+	id_t id;
+};
 
-class Circles 
+class Balls 
 {
 private:
-	std::vector<sf::CircleShape> shapes;
-	std::vector<sf::Vector2f> vels;
-	std::vector<sf::Vector2f> accels;
+	std::vector<sBall> vecBalls;
 	sf::Time time;
 	
 public:
-	Circles();
-	~Circles();
+	Balls();
+	~Balls();
 
-	void AddBall(sf::Vector2f pos, int rad, sf::Vector2f vel, sf::Vector2f accel, id_t id);
+	void AddBall(sf::Vector2f pos, int rad, sf::Vector2f vel, sf::Vector2f accel);
 	void Update(sf::Clock &clock, sf::Sound &sound, float gravity, float step);
 	void Draw(sf::RenderWindow &window);
 };

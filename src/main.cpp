@@ -1,4 +1,4 @@
-#include "./includes/circles.hpp"
+#include "./includes/balls.hpp"
 
 
 
@@ -7,18 +7,18 @@ int main()
     // Create the main window
     sf::RenderWindow window(sf::VideoMode(800, 600), "SFML window");
 
-	// Creating the circles
-	Circles circles;
+	// Creating the Balls
+	Balls balls;
 	for (int id=0; id<5; id++)
 	{
-		circles.AddBall(sf::Vector2f(180*id,200), 20, sf::Vector2f(-2*id+2,-2-id),sf::Vector2f(0,0), id);
+		balls.AddBall(sf::Vector2f(180*id,200), 20, sf::Vector2f(-100*id,-100-id*50),sf::Vector2f(0,0));
 	}
 
 	// Steps
 	sf::Clock clock;
 	sf::Time time;
 	
-	// Sound stuff
+	// Sound stuff (The sound.wav is me hitting the wall lol)
 	sf::SoundBuffer buffer;
 	buffer.loadFromFile("sound.wav");
 	sf::Sound sound;
@@ -36,10 +36,10 @@ int main()
                 window.close();
 				
         }
-		circles.Update(clock,sound,10,0.01);
+		balls.Update(clock,sound,1000,0.01);
 		clock.restart();
 		window.clear();
-		circles.Draw(window);
+		balls.Draw(window);
         window.display();
 		
     }
