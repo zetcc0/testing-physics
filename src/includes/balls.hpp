@@ -7,7 +7,7 @@ struct sBall
 {
 	sf::CircleShape shape;
 	sf::Vector2f vel, accel;
-	float mass = 70;
+	float mass = 150;
 	id_t id;
 };
 

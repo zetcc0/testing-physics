@@ -9,9 +9,12 @@ int main()
 
 	// Creating the Balls
 	Balls balls;
+	std::srand(1325251);
 	for (int id=0; id<5; id++)
-	{
-		balls.AddBall(sf::Vector2f(180*id,200), 20, sf::Vector2f(-100*id,-100-id*50),sf::Vector2f(0,0));
+	{	
+		float vely = std::rand()%66-20;
+		float velx = std::rand()%96-20;
+		balls.AddBall(sf::Vector2f(180*id,200), 20, sf::Vector2f(velx, vely),sf::Vector2f(0,0));
 	}
 
 	// Steps
@@ -36,7 +39,7 @@ int main()
                 window.close();
 				
         }
-		balls.Update(clock,sound,1000,0.01);
+		balls.Update(clock,sound,10,0.016);
 		clock.restart();
 		window.clear();
 		balls.Draw(window);

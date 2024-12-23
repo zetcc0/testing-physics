@@ -24,67 +24,74 @@ void Balls::Update(sf::Clock &clock, sf::Sound &sound, float gravity, float step
 {
 	time += clock.getElapsedTime();
 
-	if (time.asMilliseconds()>step*1000)
+	if (time.asMilliseconds()>step)
 	{
 		float vel_after_collide = 0.85;
-		for (auto &currentB : vecBalls)
+
+		// update position
+		for (auto &b : vecBalls)
 		{
-			currentB.vel += (currentB.accel + sf::Vector2f(0, gravity))*step;
-			currentB.shape.move(currentB.vel*step);
+			b.vel += (b.accel + sf::Vector2f(0, gravity))*step;
+			b.shape.move(b.vel*step);
 		}
 		
 		// does it collide with borders?
-		for (auto &currentB : vecBalls)
+		for (auto &b : vecBalls)
 		{
-			float left = currentB.shape.getPosition().x;
-			float right = left+currentB.shape.getRadius()*2;
-			float top = currentB.shape.getPosition().y;
-			float bottom = top+currentB.shape.getRadius()*2;
-			if (top < 0)
+			float left = b.shape.getPosition().x;
+			float right = left+b.shape.getRadius()*2;
+			float top = b.shape.getPosition().y;
+			float bottom = top+b.shape.getRadius()*2;
+			bool is_colliding_top = top < 0;
+			bool is_colliding_bottom = bottom > 600;
+			bool is_colliding_left = left < 0;
+			bool is_colliding_right = right > 800;
+
+			if (is_colliding_top)
 			{
-				currentB.vel.y = fabs(currentB.vel.y)*vel_after_collide;
-				currentB.shape.move(0, -top);
+				b.vel.y = -b.vel.y*vel_after_collide;
+				b.shape.move(0, -top);
 				sound.play();
 				//std::cout << "Soundtop" << std::endl;
 			}
-			if (bottom > 600)
+			if (is_colliding_bottom)
 			{
-				currentB.vel.y = -fabs(currentB.vel.y)*vel_after_collide;
-				currentB.shape.move(0, 600 - bottom);
+				b.vel.y = -b.vel.y*vel_after_collide;
+				b.shape.move(0, 600 - bottom);
 
-				if (abs(currentB.vel.y) < 10)
+				if (abs(b.vel.y) < 10)
 				{
-					currentB.vel.y = 0;
+					b.vel.y = 0;
 				}
-				if (currentB.vel.y != 0)
+				if (b.vel.y != 0)
 				{
 					sound.play();
-					//std::cout << "Soundbottom" << " " << currentB.vel.y << " " << currentB.vel.y*currentB.vel.y << std::endl;
+					//std::cout << "Soundbottom" << " " << b.vel.y << " " << b.vel.y*b.vel.y << std::endl;
 				}
 			}
-			if (left < 0)
+			if (is_colliding_left)
 			{
-				currentB.vel.x = fabs(currentB.vel.x)*vel_after_collide;
-				currentB.shape.move(-left, 0);
-				if (abs(currentB.vel.x) < 10)
+				b.vel.x = -b.vel.x*vel_after_collide;
+				b.shape.move(-left, 0);
+				if (abs(b.vel.x) < 5)
 				{
-					currentB.vel.x = 0;
+					b.vel.x = 0;
 				}
-				if (currentB.vel.x != 0)
+				if (b.vel.x != 0)
 				{
 					sound.play();
 					//std::cout << "Soundleft" << std::endl;
 				}
 			}
-			if (right > 800)
+			if (is_colliding_right)
 			{
-				currentB.vel.x = -fabs(currentB.vel.x)*vel_after_collide;
-				currentB.shape.move(800-right, 0);
-				if (abs(currentB.vel.x) < 10)
+				b.vel.x = -b.vel.x*vel_after_collide;
+				b.shape.move(800-right, 0);
+				if (abs(b.vel.x) < 5)
 				{
-					currentB.vel.x = 0;
+					b.vel.x = 0;
 				}
-				if (currentB.vel.x != 0)
+				if (b.vel.x != 0)
 				{
 					sound.play();
 					//std::cout << "Soundleft" <<  std::endl;
@@ -101,21 +108,21 @@ void Balls::Update(sf::Clock &clock, sf::Sound &sound, float gravity, float step
 			{
 				if(currentB.id >= targetB.id) continue; // I don't want id to check collide with itself neither with a ball I already check collition
 				
-				float vector_y = currentB.shape.getPosition().y - targetB.shape.getPosition().y;
-				float vector_x = currentB.shape.getPosition().x - targetB.shape.getPosition().x;
-				float distance = sqrt(pow(vector_y, 2) + pow(vector_x, 2));
+				float distance_y = currentB.shape.getPosition().y - targetB.shape.getPosition().y;
+				float distance_x = currentB.shape.getPosition().x - targetB.shape.getPosition().x;
+				float distance = sqrt(distance_y*distance_y + distance_x*distance_x);
 				float no_overlaping_distance = targetB.shape.getRadius() + currentB.shape.getRadius();
 
-				if(distance < no_overlaping_distance)
+				if(distance <= no_overlaping_distance)
 				{
 					vecCollidingBalls.push_back({ &currentB, &targetB });
 
 					float inverse_distance = 1.0f/distance;
-					sf::Vector2f vector_normalized = sf::Vector2f(vector_x*inverse_distance, vector_y*inverse_distance);
-					float overlap = (distance-no_overlaping_distance)*0.5f;
+					sf::Vector2f vector_normalized(distance_x*inverse_distance, distance_y*inverse_distance);
+					float halfoverlap = (distance-no_overlaping_distance)*0.5f;
 
-					currentB.shape.move(sf::Vector2f(-vector_normalized.x*overlap-1, -vector_normalized.y*overlap-1));
-					targetB.shape.move(sf::Vector2f(vector_normalized.x*overlap+1, vector_normalized.y*overlap+1));
+					currentB.shape.move(-vector_normalized.x*halfoverlap, -vector_normalized.y*halfoverlap);
+					targetB.shape.move(vector_normalized.x*halfoverlap, vector_normalized.y*halfoverlap);
 				}
 			}
 		}
@@ -125,19 +132,14 @@ void Balls::Update(sf::Clock &clock, sf::Sound &sound, float gravity, float step
 		{
 			sBall *currentB = collidedBalls.first;
 			sBall *targetB = collidedBalls.second;
-
-			if (vecCollidingBalls.size() != 0)
-			{
-				std::cout << "START current (" << currentB->id << "): " << currentB->vel.x << " " << currentB->vel.y << "    target (" << targetB->id << "): " << targetB->vel.x << " " << targetB->vel.y << std::endl;
-			}	
 			
-			float vector_y = currentB->shape.getPosition().y - targetB->shape.getPosition().y;
-			float vector_x = currentB->shape.getPosition().x - targetB->shape.getPosition().x;
-			float distance = sqrt(vector_y*vector_y + vector_x*vector_x);
+			float distance_y = currentB->shape.getPosition().y - targetB->shape.getPosition().y;
+			float distance_x = currentB->shape.getPosition().x - targetB->shape.getPosition().x;
+			float distance = sqrt(distance_y*distance_y + distance_x*distance_x);
 
 			float inverse_distance = 1.0f/distance;
-			sf::Vector2f vectorNorm(vector_x*inverse_distance, vector_y*inverse_distance);
-			sf::Vector2f vectorTan(vectorNorm.x, -vectorNorm.y);
+			sf::Vector2f vectorNorm(distance_x*inverse_distance, distance_y*inverse_distance);
+			sf::Vector2f vectorTan(-vectorNorm.y, vectorNorm.x);
 
 			float dpTanCurrent = vectorTan.x*currentB->vel.x + vectorTan.y*currentB->vel.y;
 			float dpTanTarget = vectorTan.x*targetB->vel.x + vectorTan.y*targetB->vel.y;
@@ -148,20 +150,11 @@ void Balls::Update(sf::Clock &clock, sf::Sound &sound, float gravity, float step
 			float mCurrent = (dpNormCurrent * (currentB->mass - targetB->mass) + 2.0f * targetB->mass * dpNormTarget) / (currentB->mass + targetB->mass); 
 			float mTarget = (dpNormTarget * (targetB->mass - currentB->mass) + 2.0f * currentB->mass * dpNormCurrent) / (currentB->mass + targetB->mass);
 
-			currentB->vel = (vectorTan*dpTanCurrent + vectorNorm*mCurrent)*vel_after_collide;
-			targetB->vel = (vectorTan*dpTanTarget + vectorNorm*mTarget)*vel_after_collide;
+			currentB->vel = (vectorTan*dpTanCurrent + vectorNorm*mCurrent);
+			targetB->vel = (vectorTan*dpTanTarget + vectorNorm*mTarget);
 			
-			if (vecCollidingBalls.size() != 0)
-			{
-				std::cout << "END current (" << currentB->id << "): " << currentB->vel.x << " " << currentB->vel.y << "    target (" << targetB->id << "): " << targetB->vel.x << " " << targetB->vel.y << std::endl;
-			}	
 		}
-		if (vecCollidingBalls.size() != 0)
-		{
-			std::cout << "lesto" << std::endl;
-		}
-
-
+		
 		time = time.Zero;
 	}
 }
