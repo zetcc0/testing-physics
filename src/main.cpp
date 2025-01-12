@@ -45,7 +45,7 @@ int main()
 				}
 				if (event.mouseButton.button == sf::Mouse::Right)
 				{
-					balls.AddBallTowardsMouse(static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)), 60.0f);
+					balls.AddBallTowardsMouse(static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)), 120.0f);
 				}
 			}	
         }
